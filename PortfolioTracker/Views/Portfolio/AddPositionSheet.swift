@@ -54,7 +54,7 @@ struct AddPositionSheet: View {
                                 TextField("e.g. AAPL", text: $ticker)
                                     .textInputAutocapitalization(.characters)
                                     .autocorrectionDisabled()
-                                    .onChange(of: ticker) { _, _ in lookupName = "" }
+                                    .onChange(of: ticker) { _ in lookupName = "" }
                                     .foregroundStyle(Color.appText)
                                 if isLookingUp {
                                     ProgressView().scaleEffect(0.7)
