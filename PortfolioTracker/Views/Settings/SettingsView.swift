@@ -3,14 +3,17 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var api: APIClient
 
-    // @AppStorage is SwiftUI's own UserDefaults wrapper — guaranteed to persist and update the UI
+    // @AppStorage persists to UserDefaults — single source of truth for the URL
     @AppStorage("serverBaseURL") private var savedURL: String = "http://localhost:5050"
 
-    @State private var editingURL = ""
-    @State private var isEditing  = false
-    @State private var isTesting  = false
-    @State private var testResult : Bool?
-    @State private var appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    // displayURL is pure @State — drives the UI immediately with zero latency
+    @State private var displayURL  = ""
+    @State private var editingURL  = ""
+    @State private var isEditing   = false
+    @State private var isTesting   = false
+    @State private var testResult  : Bool?
+    @State private var appVersion  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    @State private var didLoad     = false      // prevent onAppear overwriting after first load
 
     var body: some View {
         NavigationStack {
@@ -25,7 +28,12 @@ struct SettingsView: View {
                 .scrollContentBackground(.hidden)
             }
             .navigationTitle("Settings")
-            .onAppear { editingURL = savedURL }
+            .onAppear {
+                guard !didLoad else { return }   // only run once — don't clobber a fresh save
+                didLoad     = true
+                displayURL  = savedURL
+                editingURL  = savedURL
+            }
         }
     }
 
@@ -48,8 +56,8 @@ struct SettingsView: View {
 
                     HStack(spacing: 10) {
                         Button("Cancel") {
-                            editingURL = savedURL
-                            isEditing = false
+                            editingURL = displayURL   // restore to whatever was showing
+                            isEditing  = false
                         }
                         .foregroundStyle(Color.appSubtext)
 
@@ -57,8 +65,9 @@ struct SettingsView: View {
 
                         Button("Save") {
                             let trimmed = editingURL.trimmingCharacters(in: .init(charactersIn: "/"))
-                            savedURL    = trimmed   // @AppStorage — persists instantly
-                            api.baseURL = trimmed   // keep APIClient in sync for live requests
+                            displayURL  = trimmed   // @State — instant UI update, no async
+                            savedURL    = trimmed   // @AppStorage — persists to UserDefaults
+                            api.baseURL = trimmed   // APIClient reads UserDefaults but set explicitly too
                             isEditing   = false
                             testResult  = nil
                         }
@@ -66,7 +75,7 @@ struct SettingsView: View {
                         .foregroundStyle(Color.appAccent)
                     }
                 } else {
-                    Text(savedURL)
+                    Text(displayURL)
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(Color.appText)
                         .onTapGesture { isEditing = true }
