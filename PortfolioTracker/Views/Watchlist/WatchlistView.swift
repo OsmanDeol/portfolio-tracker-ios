@@ -231,9 +231,9 @@ struct WatchlistRow: View {
 
                 HStack(spacing: 4) {
                     // Pre/post market indicator
-                    if let pre = row.prePrice, let prePct = row.preChangePct {
+                    if row.prePrice != nil, let prePct = row.preChangePct {
                         extSessionBadge(label: "PRE", pct: prePct)
-                    } else if let post = row.postPrice, let postPct = row.postChangePct {
+                    } else if row.postPrice != nil, let postPct = row.postChangePct {
                         extSessionBadge(label: "POST", pct: postPct)
                     }
                     changeBadge(pct: displayChangePct)
