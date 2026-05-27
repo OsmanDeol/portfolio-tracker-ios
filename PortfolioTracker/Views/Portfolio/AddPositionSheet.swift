@@ -13,10 +13,10 @@ struct AddPositionSheet: View {
     @State private var commission = "0"
     @State private var tradeDate  = Date()
 
-    @State private var isLookingUp = false
+    @State private var isLookingUp  = false
     @State private var isSubmitting = false
-    @State private var errorMsg    = ""
-    @State private var lookupName  = ""
+    @State private var errorMsg     = ""
+    @State private var lookupName   = ""
 
     private var shares: Double { Double(sharesStr) ?? 0 }
     private var price:  Double { Double(priceStr) ?? 0 }
@@ -29,12 +29,15 @@ struct AddPositionSheet: View {
     }()
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.appBackground.ignoresSafeArea()
+        ZStack {
+            Color.appBackground.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                sheetHeader
 
                 ScrollView {
                     VStack(spacing: 16) {
+
                         // Trade type
                         Picker("Type", selection: $tradeType) {
                             ForEach(TradeType.allCases, id: \.self) { t in
@@ -46,40 +49,37 @@ struct AddPositionSheet: View {
 
                         // Ticker
                         VStack(alignment: .leading, spacing: 6) {
-                            label("Ticker Symbol")
+                            fieldLabel("Ticker Symbol")
                             HStack {
                                 TextField("e.g. AAPL", text: $ticker)
-                                    .textCase(.uppercase)
+                                    .textInputAutocapitalization(.characters)
                                     .autocorrectionDisabled()
                                     .onChange(of: ticker) { _, _ in lookupName = "" }
+                                    .foregroundStyle(Color.appText)
                                 if isLookingUp {
                                     ProgressView().scaleEffect(0.7)
                                 } else if !ticker.isEmpty {
                                     Button("Look up") { Task { await lookupPrice() } }
                                         .font(.caption.bold())
-                                        .foregroundStyle(.appAccent)
+                                        .foregroundStyle(Color.appAccent)
                                 }
                             }
-                            .fieldStyle()
+                            .styledField()
                             if !lookupName.isEmpty {
                                 Text(lookupName)
-                                    .font(.caption).foregroundStyle(.appSubtext)
-                                    .padding(.leading, 4)
+                                    .font(.caption)
+                                    .foregroundStyle(Color.appSubtext)
+                                    .padding(.leading, 20)
                             }
                         }
 
-                        // Shares
-                        inputField("Shares", text: $sharesStr, placeholder: "0", keyboard: .decimalPad)
+                        inputField("Shares",                  text: $sharesStr,  placeholder: "0",    keyboard: .decimalPad)
+                        inputField("Price per Share",          text: $priceStr,   placeholder: "0.00", keyboard: .decimalPad)
+                        inputField("Commission (optional)",    text: $commission, placeholder: "0.00", keyboard: .decimalPad)
 
-                        // Price
-                        inputField("Price per Share", text: $priceStr, placeholder: "0.00", keyboard: .decimalPad)
-
-                        // Commission
-                        inputField("Commission (optional)", text: $commission, placeholder: "0.00", keyboard: .decimalPad)
-
-                        // Date
+                        // Date picker
                         VStack(alignment: .leading, spacing: 6) {
-                            label("Trade Date")
+                            fieldLabel("Trade Date")
                             DatePicker("", selection: $tradeDate, in: ...Date(), displayedComponents: .date)
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
@@ -87,26 +87,30 @@ struct AddPositionSheet: View {
                                 .background(Color.appSurface)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.appBorder))
+                                .padding(.horizontal)
                         }
 
                         // Total preview
                         if shares > 0 && price > 0 {
                             HStack {
                                 Text("Total \(tradeType == .buy ? "Cost" : "Proceeds")")
-                                    .font(.subheadline).foregroundStyle(.appSubtext)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.appSubtext)
                                 Spacer()
                                 Text(total.currency)
-                                    .font(.headline).foregroundStyle(.appText)
+                                    .font(.headline)
+                                    .foregroundStyle(Color.appText)
                             }
                             .padding(14)
                             .cardStyle()
                             .padding(.horizontal)
                         }
 
-                        // Error
+                        // Error banner
                         if !errorMsg.isEmpty {
                             Text(errorMsg)
-                                .font(.caption).foregroundStyle(.appLoss)
+                                .font(.caption)
+                                .foregroundStyle(Color.appLoss)
                                 .padding(12)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(Color.appLoss.opacity(0.1))
@@ -114,7 +118,7 @@ struct AddPositionSheet: View {
                                 .padding(.horizontal)
                         }
 
-                        // Submit
+                        // Submit button
                         Button(action: { Task { await submit() } }) {
                             HStack {
                                 if isSubmitting { ProgressView().tint(.white) }
@@ -123,31 +127,50 @@ struct AddPositionSheet: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(14)
-                            .background(canSubmit ? (tradeType == .buy ? Color.appGain : Color.appLoss) : Color.appBorder)
-                            .foregroundStyle(.white)
+                            .background(canSubmit
+                                ? (tradeType == .buy ? Color.appGain : Color.appLoss)
+                                : Color.appBorder)
+                            .foregroundStyle(Color.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .disabled(!canSubmit)
                         .padding(.horizontal)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.top, 12)
-                }
-            }
-            .navigationTitle("Add Trade")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    .padding(.top, 16)
                 }
             }
         }
     }
 
+    // MARK: - Header (replaces NavigationStack + toolbar to avoid ambiguity)
+
+    private var sheetHeader: some View {
+        HStack {
+            Button("Cancel") { dismiss() }
+                .foregroundStyle(Color.appSubtext)
+            Spacer()
+            Text("Add Trade")
+                .font(.headline)
+                .foregroundStyle(Color.appText)
+            Spacer()
+            Color.clear.frame(width: 56) // visual balance
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Color.appSurface)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(Color.appBorder).frame(height: 1)
+        }
+    }
+
     // MARK: - Helper views
 
-    private func label(_ text: String) -> some View {
-        Text(text).font(.caption.bold()).foregroundStyle(.appSubtext).padding(.leading, 4)
+    private func fieldLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.bold())
+            .foregroundStyle(Color.appSubtext)
+            .padding(.leading, 20)
     }
 
     private func inputField(
@@ -155,10 +178,11 @@ struct AddPositionSheet: View {
         placeholder: String, keyboard: UIKeyboardType = .default
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            label(title)
+            fieldLabel(title)
             TextField(placeholder, text: text)
                 .keyboardType(keyboard)
-                .fieldStyle()
+                .foregroundStyle(Color.appText)
+                .styledField()
         }
     }
 
@@ -167,8 +191,7 @@ struct AddPositionSheet: View {
     private func lookupPrice() async {
         let t = ticker.uppercased().trimmingCharacters(in: .whitespaces)
         guard !t.isEmpty else { return }
-        isLookingUp = true
-        defer { isLookingUp = false }
+        isLookingUp = true; defer { isLookingUp = false }
         if let sp = try? await api.fetchStockDetail(ticker: t) {
             lookupName = sp.name ?? t
             priceStr   = String(format: "%.2f", sp.price)
@@ -176,9 +199,7 @@ struct AddPositionSheet: View {
     }
 
     private func submit() async {
-        errorMsg = ""
-        isSubmitting = true
-        defer { isSubmitting = false }
+        errorMsg = ""; isSubmitting = true; defer { isSubmitting = false }
         let t = ticker.uppercased().trimmingCharacters(in: .whitespaces)
         let dateStr = df.string(from: tradeDate)
         do {
@@ -188,32 +209,27 @@ struct AddPositionSheet: View {
             } else {
                 resp = try await api.sell(SellRequest(ticker: t, shares: shares, price: price, commission: comm, tradeDate: dateStr))
             }
-            if resp.success {
-                dismiss()
-            } else {
-                errorMsg = resp.error ?? "Unknown error"
-            }
+            if resp.success { dismiss() }
+            else { errorMsg = resp.error ?? "Unknown error" }
         } catch {
             errorMsg = error.localizedDescription
         }
     }
 }
 
-// MARK: - Field style modifier
+// MARK: - Text field style
 
 private extension View {
-    func fieldStyle() -> some View {
+    func styledField() -> some View {
         self
             .padding(12)
             .background(Color.appSurface)
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.appBorder))
-            .foregroundStyle(Color.appText)
             .padding(.horizontal)
     }
 }
 
 #Preview {
-    AddPositionSheet()
-        .environmentObject(APIClient())
+    AddPositionSheet().environmentObject(APIClient())
 }
