@@ -1,5 +1,15 @@
 import SwiftUI
 
+// MARK: - History item model
+
+struct AnalysisHistoryItem: Identifiable {
+    let id    = UUID()
+    let ticker: String
+    let analysis: String
+}
+
+// MARK: - Main view
+
 struct AnalystView: View {
     @EnvironmentObject var api: APIClient
 
@@ -7,9 +17,7 @@ struct AnalystView: View {
     @State private var result    : AIAnalysisResponse?
     @State private var isLoading = false
     @State private var errorMsg  = ""
-
-    // History of recent analyses (in-memory only, cleared on restart)
-    @State private var history: [(ticker: String, analysis: String)] = []
+    @State private var history   : [AnalysisHistoryItem] = []
 
     var body: some View {
         NavigationStack {
@@ -19,9 +27,9 @@ struct AnalystView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         searchBar
-                        if isLoading { loadingCard }
+                        if isLoading        { loadingCard }
                         if !errorMsg.isEmpty { errorCard }
-                        if let r = result { resultCard(r) }
+                        if let r = result   { resultCard(r) }
                         if !history.isEmpty && result == nil { historySection }
                     }
                     .padding(.horizontal, 16)
@@ -37,18 +45,19 @@ struct AnalystView: View {
     private var searchBar: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("AI-Powered Stock Analysis")
-                .font(.caption.bold()).foregroundStyle(.appSubtext)
+                .font(.caption.bold())
+                .foregroundStyle(Color.appSubtext)
 
             HStack(spacing: 10) {
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.appSubtext)
+                        .foregroundStyle(Color.appSubtext)
                     TextField("Enter ticker (e.g. AAPL)", text: $ticker)
-                        .textCase(.uppercase)
+                        .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                         .submitLabel(.search)
                         .onSubmit { Task { await analyze() } }
-                        .foregroundStyle(.appText)
+                        .foregroundStyle(Color.appText)
                 }
                 .padding(12)
                 .background(Color.appSurface)
@@ -61,7 +70,7 @@ struct AnalystView: View {
                     } else {
                         Image(systemName: "sparkles")
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.white)
                             .frame(width: 44, height: 44)
                             .background(ticker.isEmpty ? Color.appBorder : Color.appAccent)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -70,8 +79,9 @@ struct AnalystView: View {
                 .disabled(ticker.isEmpty || isLoading)
             }
 
-            Text("Powered by Groq · analyzes price, fundamentals, and news")
-                .font(.caption2).foregroundStyle(.appSubtext)
+            Text("Powered by Groq · analyses price, fundamentals, and news")
+                .font(.caption2)
+                .foregroundStyle(Color.appSubtext)
         }
     }
 
@@ -79,12 +89,14 @@ struct AnalystView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.4)
-                .tint(.appAccent)
+                .tint(Color.appAccent)
             VStack(spacing: 4) {
                 Text("Analysing \(ticker.uppercased())…")
-                    .font(.headline).foregroundStyle(.appText)
+                    .font(.headline)
+                    .foregroundStyle(Color.appText)
                 Text("Fetching market data and generating insights")
-                    .font(.caption).foregroundStyle(.appSubtext)
+                    .font(.caption)
+                    .foregroundStyle(Color.appSubtext)
             }
         }
         .frame(maxWidth: .infinity)
@@ -95,12 +107,14 @@ struct AnalystView: View {
     private var errorCard: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.appLoss)
+                .foregroundStyle(Color.appLoss)
             VStack(alignment: .leading, spacing: 4) {
                 Text("Analysis Failed")
-                    .font(.caption.bold()).foregroundStyle(.appLoss)
+                    .font(.caption.bold())
+                    .foregroundStyle(Color.appLoss)
                 Text(errorMsg)
-                    .font(.caption).foregroundStyle(.appSubtext)
+                    .font(.caption)
+                    .foregroundStyle(Color.appSubtext)
             }
         }
         .padding(14)
@@ -119,34 +133,36 @@ struct AnalystView: View {
                         Circle().fill(Color.appAccent.opacity(0.15))
                         Image(systemName: "sparkles")
                             .font(.caption.bold())
-                            .foregroundStyle(.appAccent)
+                            .foregroundStyle(Color.appAccent)
                     }
                     .frame(width: 32, height: 32)
 
                     VStack(alignment: .leading, spacing: 1) {
                         Text(r.ticker)
-                            .font(.headline.bold()).foregroundStyle(.appText)
+                            .font(.headline.bold())
+                            .foregroundStyle(Color.appText)
                         Text("AI Analysis")
-                            .font(.caption2).foregroundStyle(.appSubtext)
+                            .font(.caption2)
+                            .foregroundStyle(Color.appSubtext)
                     }
                 }
                 Spacer()
                 Button { result = nil } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.appSubtext)
+                        .foregroundStyle(Color.appSubtext)
                 }
             }
 
             Divider().background(Color.appBorder)
 
-            // Analysis text — parse simple markdown-like formatting
             AnalysisTextView(text: r.analysis)
 
             if let model = r.model {
                 HStack {
                     Spacer()
                     Text("Model: \(model)")
-                        .font(.caption2).foregroundStyle(.appSubtext.opacity(0.6))
+                        .font(.caption2)
+                        .foregroundStyle(Color.appSubtext.opacity(0.6))
                 }
             }
         }
@@ -157,20 +173,23 @@ struct AnalystView: View {
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Recent Analyses")
-                .font(.caption.bold()).foregroundStyle(.appSubtext)
+                .font(.caption.bold())
+                .foregroundStyle(Color.appSubtext)
                 .padding(.leading, 4)
 
-            ForEach(history.reversed(), id: \.ticker) { item in
+            ForEach(Array(history.reversed())) { item in
                 Button {
                     ticker = item.ticker
                     result = AIAnalysisResponse(analysis: item.analysis, ticker: item.ticker, model: nil)
                 } label: {
                     HStack {
                         Text(item.ticker)
-                            .font(.subheadline.bold()).foregroundStyle(.appAccent)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(Color.appAccent)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.caption).foregroundStyle(.appSubtext)
+                            .font(.caption)
+                            .foregroundStyle(Color.appSubtext)
                     }
                     .padding(14)
                     .cardStyle()
@@ -189,9 +208,8 @@ struct AnalystView: View {
         do {
             let r = try await api.analyzeStock(ticker: t)
             result = r
-            // Add to history
             if !history.contains(where: { $0.ticker == t }) {
-                history.append((ticker: t, analysis: r.analysis))
+                history.append(AnalysisHistoryItem(ticker: t, analysis: r.analysis))
                 if history.count > 10 { history.removeFirst() }
             }
         } catch {
@@ -200,7 +218,7 @@ struct AnalystView: View {
     }
 }
 
-// MARK: - Analysis text renderer (simple markdown-like)
+// MARK: - Analysis text renderer
 
 struct AnalysisTextView: View {
     let text: String
@@ -211,24 +229,23 @@ struct AnalysisTextView: View {
                 if para.hasPrefix("## ") {
                     Text(para.dropFirst(3))
                         .font(.subheadline.bold())
-                        .foregroundStyle(.appText)
+                        .foregroundStyle(Color.appText)
                         .padding(.top, 4)
                 } else if para.hasPrefix("# ") {
                     Text(para.dropFirst(2))
                         .font(.headline.bold())
-                        .foregroundStyle(.appText)
+                        .foregroundStyle(Color.appText)
                 } else if para.hasPrefix("- ") || para.hasPrefix("• ") {
                     HStack(alignment: .top, spacing: 6) {
-                        Text("•").foregroundStyle(.appAccent).font(.body)
+                        Text("•").foregroundStyle(Color.appAccent)
                         Text(para.dropFirst(2))
-                            .font(.callout).foregroundStyle(.appSubtext)
+                            .font(.callout)
+                            .foregroundStyle(Color.appSubtext)
                     }
-                } else if para.hasPrefix("**") && para.hasSuffix("**") {
-                    Text(para.dropFirst(2).dropLast(2))
-                        .font(.callout.bold()).foregroundStyle(.appText)
                 } else if !para.isEmpty {
                     Text(para)
-                        .font(.callout).foregroundStyle(.appSubtext)
+                        .font(.callout)
+                        .foregroundStyle(Color.appSubtext)
                         .lineSpacing(4)
                 }
             }
@@ -236,7 +253,8 @@ struct AnalysisTextView: View {
     }
 
     private var paragraphs: [String] {
-        text.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }
+        text.components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
     }
 }
 

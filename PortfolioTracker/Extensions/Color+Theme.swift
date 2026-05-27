@@ -1,17 +1,17 @@
 import SwiftUI
 
-extension Color {
-    // ── App palette (matches the web dark theme) ──────────────
-    static let appBackground   = Color(hex: "#0d1117")
-    static let appSurface      = Color(hex: "#161b22")
-    static let appBorder       = Color(hex: "#30363d")
-    static let appText         = Color(hex: "#e6edf3")
-    static let appSubtext      = Color(hex: "#8b949e")
-    static let appAccent       = Color(hex: "#58a6ff")
-    static let appGain         = Color(hex: "#3fb950")
-    static let appLoss         = Color(hex: "#f85149")
+// MARK: - Color palette (for use as Color.appXxx)
 
-    // ── Hex initialiser ───────────────────────────────────────
+extension Color {
+    static let appBackground = Color(hex: "#0d1117")
+    static let appSurface    = Color(hex: "#161b22")
+    static let appBorder     = Color(hex: "#30363d")
+    static let appText       = Color(hex: "#e6edf3")
+    static let appSubtext    = Color(hex: "#8b949e")
+    static let appAccent     = Color(hex: "#58a6ff")
+    static let appGain       = Color(hex: "#3fb950")
+    static let appLoss       = Color(hex: "#f85149")
+
     init(hex: String) {
         let h = hex.trimmingCharacters(in: .init(charactersIn: "#"))
         var rgb: UInt64 = 0
@@ -23,13 +23,27 @@ extension Color {
     }
 }
 
+// MARK: - ShapeStyle extensions
+// These enable dot-syntax inside .foregroundStyle(.appXxx) / .tint(.appXxx)
+
+extension ShapeStyle where Self == Color {
+    static var appBackground: Color { Color(hex: "#0d1117") }
+    static var appSurface:    Color { Color(hex: "#161b22") }
+    static var appBorder:     Color { Color(hex: "#30363d") }
+    static var appText:       Color { Color(hex: "#e6edf3") }
+    static var appSubtext:    Color { Color(hex: "#8b949e") }
+    static var appAccent:     Color { Color(hex: "#58a6ff") }
+    static var appGain:       Color { Color(hex: "#3fb950") }
+    static var appLoss:       Color { Color(hex: "#f85149") }
+}
+
 // MARK: - Formatting helpers
 
 extension Double {
     var currency: String {
         let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.currencySymbol = "$"
+        f.numberStyle        = .currency
+        f.currencySymbol     = "$"
         f.minimumFractionDigits = 2
         f.maximumFractionDigits = 2
         return f.string(from: NSNumber(value: self)) ?? "$0.00"
@@ -52,7 +66,7 @@ extension Double {
     var gainColor: Color { self >= 0 ? .appGain : .appLoss }
 }
 
-// MARK: - View modifiers
+// MARK: - Card style modifier
 
 struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {
