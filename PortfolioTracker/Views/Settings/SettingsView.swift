@@ -3,17 +3,17 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var api: APIClient
 
-    // @AppStorage persists to UserDefaults — single source of truth for the URL
+    // Single source of truth — @AppStorage owns the persisted URL
     @AppStorage("serverBaseURL") private var savedURL: String = "http://localhost:5050"
 
-    // displayURL is pure @State — drives the UI immediately with zero latency
-    @State private var displayURL  = ""
-    @State private var editingURL  = ""
-    @State private var isEditing   = false
-    @State private var isTesting   = false
-    @State private var testResult  : Bool?
-    @State private var appVersion  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
-    @State private var didLoad     = false      // prevent onAppear overwriting after first load
+    // editingURL drives the TextField; synced from savedURL on first appear
+    @State private var editingURL = ""
+    @State private var isTesting  = false
+    @State private var testResult : Bool?
+    @State private var showSaved  = false
+    @State private var appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+
+    @FocusState private var urlFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -29,10 +29,10 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .onAppear {
-                guard !didLoad else { return }   // only run once — don't clobber a fresh save
-                didLoad     = true
-                displayURL  = savedURL
-                editingURL  = savedURL
+                // Only load from storage on first appear; don't clobber live edits
+                if editingURL.isEmpty {
+                    editingURL = savedURL
+                }
             }
         }
     }
@@ -41,44 +41,43 @@ struct SettingsView: View {
 
     private var serverSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Server URL")
                     .font(.caption.bold())
                     .foregroundStyle(Color.appSubtext)
 
-                if isEditing {
-                    TextField("http://192.168.1.x:5050", text: $editingURL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                        .foregroundStyle(Color.appText)
-                        .font(.system(.body, design: .monospaced))
+                TextField("http://192.168.1.x:5050", text: $editingURL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.URL)
+                    .foregroundStyle(Color.appText)
+                    .font(.system(.body, design: .monospaced))
+                    .focused($urlFocused)
 
-                    HStack(spacing: 10) {
-                        Button("Cancel") {
-                            editingURL = displayURL   // restore to whatever was showing
-                            isEditing  = false
-                        }
-                        .foregroundStyle(Color.appSubtext)
-
-                        Spacer()
-
-                        Button("Save") {
-                            let trimmed = editingURL.trimmingCharacters(in: .init(charactersIn: "/"))
-                            displayURL  = trimmed   // @State — instant UI update, no async
-                            savedURL    = trimmed   // @AppStorage — persists to UserDefaults
-                            api.baseURL = trimmed   // APIClient reads UserDefaults but set explicitly too
-                            isEditing   = false
-                            testResult  = nil
-                        }
-                        .font(.headline)
-                        .foregroundStyle(Color.appAccent)
+                HStack {
+                    if showSaved {
+                        Label("Saved!", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(Color.appGain)
+                            .font(.subheadline.bold())
+                            .transition(.opacity)
                     }
-                } else {
-                    Text(displayURL)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(Color.appText)
-                        .onTapGesture { isEditing = true }
+                    Spacer()
+                    Button("Save") {
+                        let trimmed = editingURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+                        // Write to all three layers simultaneously
+                        savedURL    = trimmed          // @AppStorage → UserDefaults
+                        api.baseURL = trimmed          // APIClient
+                        editingURL  = trimmed          // TextField stays current
+                        urlFocused  = false            // dismiss keyboard
+                        // Flash the "Saved!" confirmation
+                        withAnimation { showSaved = true }
+                        Task {
+                            try? await Task.sleep(nanoseconds: 2_000_000_000)
+                            withAnimation { showSaved = false }
+                        }
+                    }
+                    .font(.headline)
+                    .foregroundStyle(Color.appAccent)
                 }
             }
             .padding(.vertical, 4)
