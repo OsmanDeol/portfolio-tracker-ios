@@ -43,7 +43,6 @@ jobs:
       # ── 3. Build unsigned archive ─────────────────────────
       - name: Build archive
         run: |
-          set -o pipefail
           xcodebuild archive \
             -project PortfolioTracker.xcodeproj \
             -scheme PortfolioTracker \
@@ -55,8 +54,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="" \
-            SKIP_INSTALL=NO \
-            2>&1 | grep -E "error:|warning:|Build succeeded|** ARCHIVE"
+            SKIP_INSTALL=NO
 
       # ── 4. Package into IPA ───────────────────────────────
       - name: Package IPA
