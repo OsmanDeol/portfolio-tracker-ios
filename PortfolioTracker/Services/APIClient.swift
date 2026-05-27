@@ -23,15 +23,20 @@ enum APIError: LocalizedError {
 
 // MARK: - APIClient
 
+private let kBaseURL = "serverBaseURL"
+
 final class APIClient: ObservableObject {
 
-    // The server URL is stored in UserDefaults so the user can change it in Settings.
-    @Published var baseURL: String {
-        didSet { UserDefaults.standard.set(baseURL, forKey: "baseURL") }
-    }
+    @Published var baseURL: String
 
     init() {
-        self.baseURL = UserDefaults.standard.string(forKey: "baseURL") ?? "http://localhost:5050"
+        self.baseURL = UserDefaults.standard.string(forKey: kBaseURL) ?? "http://localhost:5050"
+    }
+
+    /// Persists the current baseURL to UserDefaults immediately.
+    func saveURL() {
+        UserDefaults.standard.set(baseURL, forKey: kBaseURL)
+        UserDefaults.standard.synchronize()
     }
 
     // MARK: - Core request helpers

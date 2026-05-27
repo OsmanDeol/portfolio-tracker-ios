@@ -53,7 +53,9 @@ struct SettingsView: View {
                         Spacer()
 
                         Button("Save") {
-                            api.baseURL = editingURL.trimmingCharacters(in: .init(charactersIn: "/"))
+                            let trimmed = editingURL.trimmingCharacters(in: .init(charactersIn: "/"))
+                            api.baseURL = trimmed
+                            api.saveURL()
                             isEditing = false
                             testResult = nil
                         }
