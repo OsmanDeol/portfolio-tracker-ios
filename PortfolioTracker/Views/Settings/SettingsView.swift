@@ -3,6 +3,9 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var api: APIClient
 
+    // @AppStorage is SwiftUI's own UserDefaults wrapper — guaranteed to persist and update the UI
+    @AppStorage("serverBaseURL") private var savedURL: String = "http://localhost:5050"
+
     @State private var editingURL = ""
     @State private var isEditing  = false
     @State private var isTesting  = false
@@ -22,7 +25,7 @@ struct SettingsView: View {
                 .scrollContentBackground(.hidden)
             }
             .navigationTitle("Settings")
-            .onAppear { editingURL = api.baseURL }
+            .onAppear { editingURL = savedURL }
         }
     }
 
@@ -45,7 +48,7 @@ struct SettingsView: View {
 
                     HStack(spacing: 10) {
                         Button("Cancel") {
-                            editingURL = api.baseURL
+                            editingURL = savedURL
                             isEditing = false
                         }
                         .foregroundStyle(Color.appSubtext)
@@ -54,15 +57,16 @@ struct SettingsView: View {
 
                         Button("Save") {
                             let trimmed = editingURL.trimmingCharacters(in: .init(charactersIn: "/"))
-                            api.baseURL = trimmed   // writes to UserDefaults instantly
-                            isEditing = false
-                            testResult = nil
+                            savedURL    = trimmed   // @AppStorage — persists instantly
+                            api.baseURL = trimmed   // keep APIClient in sync for live requests
+                            isEditing   = false
+                            testResult  = nil
                         }
                         .font(.headline)
                         .foregroundStyle(Color.appAccent)
                     }
                 } else {
-                    Text(api.baseURL)
+                    Text(savedURL)
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(Color.appText)
                         .onTapGesture { isEditing = true }

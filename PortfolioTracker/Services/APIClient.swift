@@ -27,13 +27,10 @@ private let kBaseURL = "serverBaseURL"
 
 final class APIClient: ObservableObject {
 
-    // Computed property — every read goes to UserDefaults, every write persists immediately.
+    // Always read live from UserDefaults so it stays in sync with @AppStorage in SettingsView
     var baseURL: String {
         get { UserDefaults.standard.string(forKey: kBaseURL) ?? "http://localhost:5050" }
-        set {
-            objectWillChange.send()           // tell SwiftUI to re-render
-            UserDefaults.standard.set(newValue, forKey: kBaseURL)
-        }
+        set { UserDefaults.standard.set(newValue, forKey: kBaseURL) }
     }
 
     init() {}
