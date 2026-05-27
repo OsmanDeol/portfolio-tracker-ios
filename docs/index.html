@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Portfolio Tracker — iOS Install Guide</title>
+<style>
+  :root {
+    --bg:     #0d1117;
+    --bg2:    #161b22;
+    --border: #30363d;
+    --txt:    #e6edf3;
+    --txt2:   #8b949e;
+    --acc:    #58a6ff;
+    --gain:   #3fb950;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--txt);
+    min-height: 100vh;
+    padding: 40px 16px;
+  }
+  .container { max-width: 600px; margin: 0 auto; }
+
+  .header { text-align: center; margin-bottom: 40px; }
+  .logo   { font-size: 56px; margin-bottom: 12px; }
+  h1      { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .sub    { color: var(--txt2); font-size: 15px; line-height: 1.5; }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--acc);
+    margin-bottom: 16px;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--acc);
+    color: #000;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-body p   { font-size: 14px; line-height: 1.5; color: var(--txt); }
+  .step-body small { color: var(--txt2); font-size: 12px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity .15s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--acc); color: #000; }
+  .btn-secondary { background: var(--bg2); color: var(--txt); border: 1px solid var(--border); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+  .url-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--acc);
+    word-break: break-all;
+    margin-top: 10px;
+    position: relative;
+  }
+  .copy-btn {
+    float: right;
+    background: var(--border);
+    border: none;
+    color: var(--txt);
+    padding: 3px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: 8px;
+  }
+  .copy-btn:hover { background: var(--acc); color: #000; }
+
+  .note {
+    background: rgba(88,166,255,.07);
+    border: 1px solid rgba(88,166,255,.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--txt2);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  footer { text-align: center; margin-top: 40px; color: var(--txt2); font-size: 12px; }
+  footer a { color: var(--acc); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">📈</div>
+    <h1>Portfolio Tracker</h1>
+    <p class="sub">Native iOS app · Free to install via AltStore<br/>Track your investments, analyse stocks, get AI insights.</p>
+  </div>
+
+  <!-- Quick install -->
+  <div class="card">
+    <h2>⚡ Quick Install (existing AltStore users)</h2>
+    <p style="font-size:14px;color:var(--txt2);margin-bottom:12px;">
+      Already have AltStore? Add this source and install in seconds.
+    </p>
+    <div class="url-box">
+      <button class="copy-btn" onclick="copyURL()">Copy</button>
+      https://osmandeol.github.io/portfolio-tracker-ios/altstore-source.json
+    </div>
+    <div class="btn-row">
+      <a class="btn btn-primary"
+         href="altstore://source?url=https://osmandeol.github.io/portfolio-tracker-ios/altstore-source.json">
+        ＋ Add Source in AltStore
+      </a>
+    </div>
+    <div class="note">
+      💡 The "Add Source in AltStore" button only works if you tap it <strong>on your iPhone</strong> with AltStore installed.
+    </div>
+  </div>
+
+  <!-- Full setup guide -->
+  <div class="card">
+    <h2>🪟 First-Time Setup (Windows)</h2>
+
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-body">
+        <p><strong>Download AltServer for Windows</strong></p>
+        <small>Go to altstore.io → Download → Windows</small>
+        <div class="btn-row">
+          <a class="btn btn-secondary" href="https://altstore.io" target="_blank">→ altstore.io</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-body">
+        <p><strong>Install AltServer &amp; iTunes</strong></p>
+        <small>Run the AltServer installer. It will also prompt you to install iTunes from Apple's website (not the Microsoft Store version) — this is required.</small>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div class="step-body">
+        <p><strong>Plug your iPhone into the PC</strong></p>
+        <small>Use a USB cable. Trust the computer when your iPhone asks.</small>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div class="step-body">
+        <p><strong>Install AltStore on your iPhone</strong></p>
+        <small>Click the AltServer icon in the Windows system tray → "Install AltStore" → pick your iPhone. Sign in with your Apple ID when prompted.</small>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div class="step-body">
+        <p><strong>Trust the app on your iPhone</strong></p>
+        <small>Go to iPhone Settings → General → VPN &amp; Device Management → tap your Apple ID → Trust.</small>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">6</div>
+      <div class="step-body">
+        <p><strong>Open AltStore → Sources tab → tap +</strong></p>
+        <small>Paste this URL:</small>
+        <div class="url-box" style="margin-top:8px;">
+          https://osmandeol.github.io/portfolio-tracker-ios/altstore-source.json
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">7</div>
+      <div class="step-body">
+        <p><strong>Find Portfolio Tracker → tap Free → Install</strong></p>
+        <small>Done! The app is now on your iPhone. AltStore will automatically re-sign it every 7 days in the background when your phone is on home Wi-Fi.</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- After setup -->
+  <div class="card">
+    <h2>🔄 After Setup</h2>
+    <div class="step">
+      <div class="num" style="background:var(--gain)">✓</div>
+      <div class="step-body">
+        <p><strong>Leave AltServer running in the system tray</strong></p>
+        <small>It uses almost no resources. Your app silently re-signs every 7 days on home Wi-Fi — you never touch it.</small>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num" style="background:var(--gain)">✓</div>
+      <div class="step-body">
+        <p><strong>Updates happen automatically</strong></p>
+        <small>When a new version is released you'll see a badge in AltStore. Tap Update — same as the App Store.</small>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num" style="background:var(--gain)">✓</div>
+      <div class="step-body">
+        <p><strong>Set your server URL</strong></p>
+        <small>Open the app → Settings tab → enter your Flask server's IP and port (e.g. http://192.168.1.x:5050). Tap "Test Connection" to verify.</small>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      <a href="https://github.com/OsmanDeol/portfolio-tracker-ios">iOS source</a> ·
+      <a href="https://github.com/OsmanDeol/portfolio-tracker">Backend source</a>
+    </p>
+  </footer>
+</div>
+
+<script>
+function copyURL() {
+  navigator.clipboard.writeText(
+    'https://osmandeol.github.io/portfolio-tracker-ios/altstore-source.json'
+  ).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>

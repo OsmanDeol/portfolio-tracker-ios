@@ -1,0 +1,131 @@
+# ─────────────────────────────────────────────────────────────
+#  Portfolio Tracker iOS — Auto Release
+#
+#  Trigger:  git tag v1.0.1  &&  git push origin v1.0.1
+#
+#  What happens automatically:
+#    1. GitHub spins up a Mac
+#    2. Builds an unsigned IPA (no paid certificate needed)
+#    3. Creates a GitHub Release and uploads the IPA
+#    4. Updates the AltStore source JSON on GitHub Pages
+#
+#  Users open AltStore and see the update automatically.
+# ─────────────────────────────────────────────────────────────
+
+name: Build & Release IPA
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build unsigned IPA and publish
+    runs-on: macos-latest
+
+    steps:
+
+      # ── 1. Checkout main branch ───────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 2. Show Xcode version (useful for debugging) ──────
+      - name: Xcode version
+        run: xcodebuild -version
+
+      # ── 3. Build unsigned archive ─────────────────────────
+      - name: Build archive
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project PortfolioTracker.xcodeproj \
+            -scheme PortfolioTracker \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/PortfolioTracker.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="" \
+            SKIP_INSTALL=NO \
+            2>&1 | grep -E "error:|warning:|Build succeeded|** ARCHIVE"
+
+      # ── 4. Package into IPA ───────────────────────────────
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -r "build/PortfolioTracker.xcarchive/Products/Applications/PortfolioTracker.app" \
+                build/Payload/
+          cd build
+          zip -r PortfolioTracker.ipa Payload/
+          echo "IPA size: $(du -sh PortfolioTracker.ipa | cut -f1)"
+
+      # ── 5. Publish GitHub Release with IPA ────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Portfolio Tracker ${{ github.ref_name }}"
+          body: |
+            ## Portfolio Tracker ${{ github.ref_name }}
+
+            ### Update (existing users)
+            Open **AltStore** on your iPhone — the update appears automatically.
+
+            ### First install
+            1. Set up AltStore (see [install guide](https://osmandeol.github.io/portfolio-tracker-ios))
+            2. Download `PortfolioTracker.ipa` below and open it in AltStore
+
+          files: build/PortfolioTracker.ipa
+          generate_release_notes: true
+
+      # ── 6. Update AltStore source JSON ────────────────────
+      - name: Update AltStore source
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TAG="${{ github.ref_name }}"
+          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          SIZE=$(wc -c < build/PortfolioTracker.ipa | tr -d ' ')
+
+          jq -n \
+            --arg  version "$VERSION" \
+            --arg  date    "$DATE" \
+            --arg  tag     "$TAG" \
+            --argjson size "$SIZE" \
+            '{
+              name: "Portfolio Tracker",
+              identifier: "com.osmandeol.portfolio-tracker-source",
+              apps: [{
+                name: "Portfolio Tracker",
+                bundleIdentifier: "com.osmandeol.PortfolioTracker",
+                developerName: "Osman Deol",
+                subtitle: "Track investments with AI insights",
+                version: $version,
+                versionDate: $date,
+                versionDescription: "See GitHub release notes for full changelog.",
+                downloadURL: ("https://github.com/OsmanDeol/portfolio-tracker-ios/releases/download/" + $tag + "/PortfolioTracker.ipa"),
+                localizedDescription: "Track your investments, analyse stocks, and get AI-powered insights. Connects to your personal Portfolio Tracker server.",
+                tintColor: "58A6FF",
+                size: $size
+              }],
+              news: []
+            }' > docs/altstore-source.json
+
+          echo "AltStore source updated to $VERSION"
+
+      # ── 7. Commit updated source back to main ─────────────
+      - name: Commit source update
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/altstore-source.json
+          git diff --staged --quiet || \
+            git commit -m "chore: update AltStore source to ${{ github.ref_name }}"
+          git push origin main
