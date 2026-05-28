@@ -7,13 +7,13 @@
       "bundleIdentifier": "com.osmandeol.PortfolioTracker",
       "developerName": "Osman Deol",
       "subtitle": "Track investments with AI insights",
-      "version": "1.0.1",
-      "versionDate": "2026-05-27T16:14:51Z",
+      "version": "1.0.2",
+      "versionDate": "2026-05-28T01:33:14Z",
       "versionDescription": "See GitHub release notes for full changelog.",
-      "downloadURL": "https://github.com/OsmanDeol/portfolio-tracker-ios/releases/download/v1.0.1/PortfolioTracker.ipa",
+      "downloadURL": "https://github.com/OsmanDeol/portfolio-tracker-ios/releases/download/v1.0.2/PortfolioTracker.ipa",
       "localizedDescription": "Track your investments, analyse stocks, and get AI-powered insights. Connects to your personal Portfolio Tracker server.",
       "tintColor": "58A6FF",
-      "size": 278342
+      "size": 278538
     }
   ],
   "news": []
