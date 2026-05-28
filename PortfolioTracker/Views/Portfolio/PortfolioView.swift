@@ -132,7 +132,7 @@ struct PortfolioView: View {
                 Circle()
                     .fill(ms.isOpen ? Color.appGain : Color.appLoss)
                     .frame(width: 7, height: 7)
-                Text(ms.session.uppercased())
+                Text(ms.status.uppercased())
                     .font(.caption2.bold())
                     .foregroundStyle(ms.isOpen ? .appGain : .appSubtext)
             }

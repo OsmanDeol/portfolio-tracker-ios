@@ -64,15 +64,17 @@ struct StockPrice: Codable {
 // MARK: - Market Status
 
 struct MarketStatus: Codable {
-    let isOpen: Bool
-    let session: String   // "pre", "open", "post", "closed"
-    let nyTime: String
+    let status: String      // "open", "closed", "pre", "post"
+    let nextLabel: String
+    let secondsToNext: Int
 
     enum CodingKeys: String, CodingKey {
-        case isOpen  = "is_open"
-        case session
-        case nyTime  = "ny_time"
+        case status
+        case nextLabel     = "next_label"
+        case secondsToNext = "seconds_to_next"
     }
+
+    var isOpen: Bool { status == "open" }
 }
 
 // MARK: - Watchlist
