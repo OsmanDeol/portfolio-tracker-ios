@@ -9,6 +9,7 @@ struct HistoryView: View {
     @State private var transactions: [Transaction] = []
     @State private var realized: [RealizedPnL] = []
     @State private var isLoading = false
+    @State private var errorMsg  = ""
     @State private var filterTicker = ""
 
     // Totals
@@ -35,6 +36,15 @@ struct HistoryView: View {
                     if isLoading {
                         Spacer()
                         ProgressView("Loading…").foregroundStyle(.appSubtext)
+                        Spacer()
+                    } else if !errorMsg.isEmpty {
+                        Spacer()
+                        VStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle").font(.system(size: 36)).foregroundStyle(.appLoss)
+                            Text(errorMsg).font(.caption).foregroundStyle(.appSubtext).multilineTextAlignment(.center)
+                            Button("Retry") { Task { await loadAll() } }
+                                .font(.subheadline.bold()).foregroundStyle(.appAccent)
+                        }.padding()
                         Spacer()
                     } else {
                         switch activeTab {
@@ -87,6 +97,13 @@ struct HistoryView: View {
                 } else {
                     ForEach(filteredTxns) { txn in
                         TransactionRow(txn: txn)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    Task { await deleteTransaction(id: txn.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
                 }
             }
@@ -138,11 +155,20 @@ struct HistoryView: View {
     // MARK: - Load
 
     private func loadAll() async {
-        isLoading = true; defer { isLoading = false }
-        async let t = api.fetchTransactions()
-        async let r = api.fetchRealizedPnL()
-        transactions = (try? await t) ?? []
-        realized     = (try? await r) ?? []
+        isLoading = true; errorMsg = ""; defer { isLoading = false }
+        do {
+            async let t = api.fetchTransactions()
+            async let r = api.fetchRealizedPnL()
+            transactions = try await t
+            realized     = try await r
+        } catch {
+            errorMsg = error.localizedDescription
+        }
+    }
+
+    private func deleteTransaction(id: Int) async {
+        _ = try? await api.deleteTransaction(id: id)
+        await loadAll()
     }
 }
 

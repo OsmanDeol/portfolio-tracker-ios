@@ -181,7 +181,8 @@ final class APIClient: ObservableObject {
     // MARK: - AI Analyst
 
     func analyzeStock(ticker: String) async throws -> AIAnalysisResponse {
-        try await post("/api/ai/analyze", body: AIAnalysisRequest(ticker: ticker))
+        let key = UserDefaults.standard.string(forKey: "groqAPIKey") ?? ""
+        return try await post("/api/ai/analyze", body: AIAnalysisRequest(ticker: ticker, apiKey: key))
     }
 
     // MARK: - Connection test

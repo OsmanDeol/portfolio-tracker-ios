@@ -79,6 +79,15 @@ struct WatchlistView: View {
             Spacer()
             ProgressView("Loading…").foregroundStyle(.appSubtext)
             Spacer()
+        } else if !errorMsg.isEmpty {
+            VStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle").font(.system(size: 36)).foregroundStyle(.appLoss)
+                Text(errorMsg).font(.caption).foregroundStyle(.appSubtext).multilineTextAlignment(.center)
+                Button("Retry") { Task { await loadWatchlists() } }
+                    .font(.subheadline.bold()).foregroundStyle(.appAccent)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding()
         } else if watchlists.isEmpty {
             emptyWatchlistState
         } else if let wl = selected {

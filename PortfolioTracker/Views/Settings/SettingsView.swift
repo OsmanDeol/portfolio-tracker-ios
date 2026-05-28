@@ -3,15 +3,15 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var api: APIClient
 
-    // Single source of truth — @AppStorage owns the persisted URL
-    @AppStorage("serverBaseURL") private var savedURL: String = "http://localhost:5050"
+    @AppStorage("serverBaseURL") private var savedURL:    String = "http://localhost:5050"
+    @AppStorage("groqAPIKey")   private var groqAPIKey: String = ""
 
-    // editingURL drives the TextField; synced from savedURL on first appear
-    @State private var editingURL = ""
-    @State private var isTesting  = false
-    @State private var testResult : Bool?
-    @State private var showSaved  = false
-    @State private var appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    @State private var editingURL    = ""
+    @State private var editingGroq   = ""
+    @State private var isTesting     = false
+    @State private var testResult    : Bool?
+    @State private var showSaved     = false
+    @State private var appVersion    = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
 
     @FocusState private var urlFocused: Bool
 
@@ -21,6 +21,7 @@ struct SettingsView: View {
                 Color.appBackground.ignoresSafeArea()
                 List {
                     serverSection
+                    groqSection
                     aboutSection
                     distributionSection
                 }
@@ -29,10 +30,8 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .onAppear {
-                // Only load from storage on first appear; don't clobber live edits
-                if editingURL.isEmpty {
-                    editingURL = savedURL
-                }
+                if editingURL.isEmpty { editingURL = savedURL }
+                if editingGroq.isEmpty { editingGroq = groqAPIKey }
             }
         }
     }
@@ -108,6 +107,47 @@ struct SettingsView: View {
             Text("Server").foregroundStyle(Color.appSubtext)
         } footer: {
             Text("Set this to your Flask server's IP and port. On home Wi-Fi use your Mac's local IP (e.g. 192.168.1.x:5050). For remote access, use a Tailscale IP or a Railway HTTPS URL.")
+                .foregroundStyle(Color.appSubtext)
+                .font(.caption)
+        }
+    }
+
+    // MARK: - Groq section
+
+    private var groqSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Groq API Key")
+                    .font(.caption.bold())
+                    .foregroundStyle(Color.appSubtext)
+
+                SecureField("gsk_…", text: $editingGroq)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .foregroundStyle(Color.appText)
+                    .font(.system(.body, design: .monospaced))
+
+                HStack {
+                    if !groqAPIKey.isEmpty {
+                        Label("Key saved", systemImage: "checkmark.circle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color.appGain)
+                    }
+                    Spacer()
+                    Button("Save Key") {
+                        groqAPIKey  = editingGroq.trimmingCharacters(in: .whitespaces)
+                        editingGroq = groqAPIKey
+                    }
+                    .font(.headline)
+                    .foregroundStyle(Color.appAccent)
+                }
+            }
+            .padding(.vertical, 4)
+            .listRowBackground(Color.appSurface)
+        } header: {
+            Text("AI Analyst").foregroundStyle(Color.appSubtext)
+        } footer: {
+            Text("Required for the AI Analyst tab. Get a free key at console.groq.com. The key is stored on your device only.")
                 .foregroundStyle(Color.appSubtext)
                 .font(.caption)
         }

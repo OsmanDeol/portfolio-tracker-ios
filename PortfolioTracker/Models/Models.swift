@@ -162,12 +162,51 @@ struct RealizedPnL: Codable, Identifiable {
 
 struct AIAnalysisRequest: Codable {
     let ticker: String
+    let apiKey: String
+
+    enum CodingKeys: String, CodingKey {
+        case ticker
+        case apiKey = "api_key"
+    }
 }
 
 struct AIAnalysisResponse: Codable {
-    let analysis: String
+    let success: Bool
     let ticker: String
-    let model: String?
+    let price:  Double?
+    let analysis: AIAnalysis
+}
+
+struct AIAnalysis: Codable {
+    let recommendation: String   // "BUY" | "HOLD" | "SELL"
+    let confidence: Int          // 1-10
+    let summary: String
+    let bullCase: [String]
+    let bearCase: [String]
+    let macroImpact: String
+    let newsImpact: String
+    let technicals: String
+    let fundamentals: String
+    let priceTargetLow: Double
+    let priceTargetHigh: Double
+    let timeHorizon: String
+    let valuation: String        // "Cheap" | "Fair" | "Expensive"
+    let momentum: String         // "Strong" | "Neutral" | "Weak"
+    let quality: String          // "High" | "Medium" | "Low"
+    let macroRisk: String        // "Low" | "Medium" | "High"
+
+    enum CodingKeys: String, CodingKey {
+        case recommendation, confidence, summary, technicals, fundamentals
+        case valuation, momentum, quality
+        case bullCase        = "bull_case"
+        case bearCase        = "bear_case"
+        case macroImpact     = "macro_impact"
+        case newsImpact      = "news_impact"
+        case priceTargetLow  = "price_target_low"
+        case priceTargetHigh = "price_target_high"
+        case timeHorizon     = "time_horizon"
+        case macroRisk       = "macro_risk"
+    }
 }
 
 // MARK: - Trade Requests

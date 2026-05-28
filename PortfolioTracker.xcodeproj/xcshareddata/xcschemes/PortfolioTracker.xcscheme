@@ -28,8 +28,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
-      <Testables>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -75,15 +73,5 @@
    <ArchiveAction
       buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "EB137522A8624BA19F0DB006"
-            BuildableName = "PortfolioTracker.app"
-            BlueprintName = "PortfolioTracker"
-            ReferencedContainer = "container:PortfolioTracker.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </ArchiveAction>
 </Scheme>
